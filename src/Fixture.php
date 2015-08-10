@@ -51,8 +51,8 @@ class Fixture
         }
 
         foreach ($row as $key => $value) {
-            $attr = $schema->getAttribute($key, $value);
-            $data[$attr->getName()] = $attr->getValue();
+            $attr = $schema->getAttribute($key);
+            $data[$attr->getName()] = $attr->parseValue($value);
         }
 
         return $data;

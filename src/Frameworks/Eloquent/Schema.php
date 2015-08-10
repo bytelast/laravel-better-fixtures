@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use ReflectionClass;
 use Yaodong\Fixtures\Attribute;
 use Yaodong\Fixtures\Contracts\Schema as Base;
-use Yaodong\Fixtures\Fixtures;
 
 class Schema implements Base
 {
@@ -45,36 +44,41 @@ class Schema implements Base
         return $this->model->getKeyName();
     }
 
-    public function getAttribute($key, $value)
+    /**
+     * @param string $key
+     *
+     * @return Attribute
+     */
+    public function getAttribute($key)
     {
         if (!isset($this->columns[$key])) {
-            $this->columns[$key] = $this->parseAttribute($key, $value);
+            $this->columns[$key] = $this->parseAttribute($key);
         }
 
         return $this->columns[$key];
     }
 
-    private function parseAttribute($key, $value)
+    private function parseAttribute($key)
     {
         if ($this->reflection->hasMethod($key)) {
             $method = $this->reflection->getMethod($key);
             if ($method->isPublic() && $method->getNumberOfParameters() === 0) {
                 $return = call_user_func([$this->model, $key]);
                 if ($return instanceof Relation) {
-                    return $this->parseAssociation($return, $key, $value);
+                    return $this->parseAssociation($return, $key);
                 }
             }
         }
 
-        return new Attribute($key, $value);
+        return new Attribute($key);
     }
 
-    private function parseAssociation(Relation $relation, $key, $value)
+    private function parseAssociation(Relation $relation, $key)
     {
         if ($relation instanceof BelongsTo) {
             $key = $relation->getForeignKey();
         }
 
-        return new Attribute($key, Fixtures::identify($value));
+        return new Association($key);
     }
 }

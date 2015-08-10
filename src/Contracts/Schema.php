@@ -15,9 +15,8 @@ interface Schema
 
     /**
      * @param string $key
-     * @param mixed  $value
      *
      * @return Attribute
      */
-    public function getAttribute($key, $value);
+    public function getAttribute($key);
 }

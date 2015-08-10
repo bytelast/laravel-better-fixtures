@@ -11,11 +11,6 @@ class Attribute implements Base
     private $name;
 
     /**
-     * @var mixed
-     */
-    private $value;
-
-    /**
      * The registered string macros.
      *
      * @var array
@@ -24,12 +19,10 @@ class Attribute implements Base
 
     /**
      * @param string $name
-     * @param mixed  $value
      */
-    public function __construct($name, $value)
+    public function __construct($name)
     {
         $this->name  = $name;
-        $this->value = $value;
     }
 
     /**
@@ -41,11 +34,13 @@ class Attribute implements Base
     }
 
     /**
+     * @param mixed $value
+     *
      * @return mixed
      */
-    public function getValue()
+    public function parseValue($value)
     {
-        return $this->value;
+        return $value;
     }
 
     /**
