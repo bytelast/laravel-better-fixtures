@@ -10,7 +10,10 @@ class Fixtures
      */
     private $fixtures = [];
 
-    const MAX_ID = 2 ** 30 - 1;
+    /**
+     * Integer identifiers are values less than 2^30.
+     */
+    const MAX_ID = 1073741823; // 2 ** 30 - 1
 
     public function __construct($path, callable $schema_loader)
     {

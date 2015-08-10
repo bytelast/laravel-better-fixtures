@@ -45,8 +45,9 @@ class Fixture
         $data   = [];
         $schema = $this->schema;
 
-        if ($schema->getIncrementing()) {
-            $data[$schema->getPrimaryKeyName()] = Fixtures::identify($label);
+        // generate a primary key if necessary
+        if ($schema->getIncrementing() && !array_key_exists($pk = $schema->getPrimaryKeyName(), $data)) {
+            $data[$pk] = Fixtures::identify($label);
         }
 
         foreach ($row as $key => $value) {
