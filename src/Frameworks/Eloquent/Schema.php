@@ -45,40 +45,41 @@ class Schema implements Base
     }
 
     /**
-     * @param string $key
+     * @param string $name
      *
      * @return Attribute
      */
-    public function getAttribute($key)
+    public function getAttribute($name)
     {
-        if (!isset($this->columns[$key])) {
-            $this->columns[$key] = $this->parseAttribute($key);
+        if (!isset($this->columns[$name])) {
+            $this->columns[$name] = $this->parseAttribute($name);
         }
 
-        return $this->columns[$key];
+        return $this->columns[$name];
     }
 
-    private function parseAttribute($key)
+    private function parseAttribute($name)
     {
-        if ($this->reflection->hasMethod($key)) {
-            $method = $this->reflection->getMethod($key);
+        $method_name = camel_case($name);
+        if ($this->reflection->hasMethod($method_name)) {
+            $method = $this->reflection->getMethod($method_name);
             if ($method->isPublic() && $method->getNumberOfParameters() === 0) {
-                $return = call_user_func([$this->model, $key]);
+                $return = call_user_func([$this->model, $method_name]);
                 if ($return instanceof Relation) {
-                    return $this->parseAssociation($return, $key);
+                    return $this->parseAssociation($return, $name);
                 }
             }
         }
 
-        return new Attribute($key);
+        return new Attribute($name);
     }
 
-    private function parseAssociation(Relation $relation, $key)
+    private function parseAssociation(Relation $relation, $name)
     {
         if ($relation instanceof BelongsTo) {
-            $key = $relation->getForeignKey();
+            $name = $relation->getForeignKey();
         }
 
-        return new Association($key);
+        return new Association($name);
     }
 }
