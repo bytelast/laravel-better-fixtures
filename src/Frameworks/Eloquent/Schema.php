@@ -1,4 +1,5 @@
 <?php
+
 namespace Yaodong\Fixtures\Framework\Eloquent;
 
 use Illuminate\Database\Eloquent\Model;
@@ -30,7 +31,7 @@ class Schema implements Base
      */
     public function __construct(Model $model)
     {
-        $this->model      = $model;
+        $this->model = $model;
         $this->reflection = new ReflectionClass(get_class($model));
     }
 

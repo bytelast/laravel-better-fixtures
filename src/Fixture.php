@@ -1,4 +1,5 @@
 <?php
+
 namespace Yaodong\Fixtures;
 
 use Yaodong\Fixtures\Contracts\Schema;
@@ -27,7 +28,7 @@ class Fixture
      */
     public function __construct($table, array $rows, Schema $schema)
     {
-        $this->table  = $table;
+        $this->table = $table;
         $this->schema = $schema;
 
         foreach ($rows as $label => $row) {
@@ -38,11 +39,12 @@ class Fixture
     /**
      * @param string $label
      * @param array  $row
+     *
      * @return array
      */
     protected function parse($label, array $row)
     {
-        $data   = [];
+        $data = [];
         $schema = $this->schema;
 
         // generate a primary key if necessary
@@ -65,5 +67,4 @@ class Fixture
     {
         return $this->rows;
     }
-
 }
