@@ -1,4 +1,5 @@
 <?php
+
 namespace Yaodong\Fixtures\Contracts;
 
 interface Attribute

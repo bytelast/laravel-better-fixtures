@@ -1,4 +1,5 @@
 <?php
+
 namespace Yaodong\Fixtures\Framework\Eloquent;
 
 use Yaodong\Fixtures\Attribute;
@@ -15,5 +16,4 @@ class Association extends Attribute
     {
         return Fixtures::identify($value);
     }
-
 }
