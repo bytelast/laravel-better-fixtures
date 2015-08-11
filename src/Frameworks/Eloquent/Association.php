@@ -1,6 +1,6 @@
 <?php
 
-namespace Yaodong\Fixtures\Framework\Eloquent;
+namespace Yaodong\Fixtures\Frameworks\Eloquent;
 
 use Yaodong\Fixtures\Attribute;
 use Yaodong\Fixtures\Fixtures;
