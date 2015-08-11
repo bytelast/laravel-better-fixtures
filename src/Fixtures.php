@@ -1,4 +1,5 @@
 <?php
+
 namespace Yaodong\Fixtures;
 
 use Symfony\Component\Yaml\Yaml;
@@ -10,13 +11,16 @@ class Fixtures
      */
     private $fixtures = [];
 
-    const MAX_ID = 2 ** 30 - 1;
+    /**
+     * Integer identifiers are values less than 2^30.
+     */
+    const MAX_ID = 1073741823; // 2 ** 30 - 1
 
     public function __construct($path, callable $schema_loader)
     {
         foreach (glob("$path/*.yml") as $file) {
             $table = static::parseTableName($file);
-            $rows  = static::readTableRows($file);
+            $rows = static::readTableRows($file);
             $this->fixtures[$table] = new Fixture($table, $rows, call_user_func($schema_loader, $table));
         }
     }
@@ -33,7 +37,7 @@ class Fixtures
 
     public static function identify($label)
     {
-       return sprintf('%u', crc32($label)) % self::MAX_ID;
+        return sprintf('%u', crc32($label)) % self::MAX_ID;
     }
 
     /**

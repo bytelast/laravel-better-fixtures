@@ -1,5 +1,6 @@
 <?php
-namespace Yaodong\Fixtures\Framework\Eloquent;
+
+namespace Yaodong\Fixtures\Frameworks\Eloquent;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -7,7 +8,6 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use ReflectionClass;
 use Yaodong\Fixtures\Attribute;
 use Yaodong\Fixtures\Contracts\Schema as Base;
-use Yaodong\Fixtures\Fixtures;
 
 class Schema implements Base
 {
@@ -31,7 +31,7 @@ class Schema implements Base
      */
     public function __construct(Model $model)
     {
-        $this->model      = $model;
+        $this->model = $model;
         $this->reflection = new ReflectionClass(get_class($model));
     }
 
@@ -45,36 +45,42 @@ class Schema implements Base
         return $this->model->getKeyName();
     }
 
-    public function getAttribute($key, $value)
+    /**
+     * @param string $name
+     *
+     * @return Attribute
+     */
+    public function getAttribute($name)
     {
-        if (!isset($this->columns[$key])) {
-            $this->columns[$key] = $this->parseAttribute($key, $value);
+        if (!isset($this->columns[$name])) {
+            $this->columns[$name] = $this->parseAttribute($name);
         }
 
-        return $this->columns[$key];
+        return $this->columns[$name];
     }
 
-    private function parseAttribute($key, $value)
+    private function parseAttribute($name)
     {
-        if ($this->reflection->hasMethod($key)) {
-            $method = $this->reflection->getMethod($key);
+        $method_name = camel_case($name);
+        if ($this->reflection->hasMethod($method_name)) {
+            $method = $this->reflection->getMethod($method_name);
             if ($method->isPublic() && $method->getNumberOfParameters() === 0) {
-                $return = call_user_func([$this->model, $key]);
+                $return = call_user_func([$this->model, $method_name]);
                 if ($return instanceof Relation) {
-                    return $this->parseAssociation($return, $key, $value);
+                    return $this->parseAssociation($return, $name);
                 }
             }
         }
 
-        return new Attribute($key, $value);
+        return new Attribute($name);
     }
 
-    private function parseAssociation(Relation $relation, $key, $value)
+    private function parseAssociation(Relation $relation, $name)
     {
         if ($relation instanceof BelongsTo) {
-            $key = $relation->getForeignKey();
+            $name = $relation->getForeignKey();
         }
 
-        return new Attribute($key, Fixtures::identify($value));
+        return new Association($name);
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace Yaodong\Fixtures\Contracts;
 
 interface Attribute
@@ -9,7 +10,9 @@ interface Attribute
     public function getName();
 
     /**
+     * @param mixed $value
+     *
      * @return mixed
      */
-    public function getValue();
+    public function parseValue($value);
 }

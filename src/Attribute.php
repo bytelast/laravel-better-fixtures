@@ -1,4 +1,5 @@
 <?php
+
 namespace Yaodong\Fixtures;
 
 use Yaodong\Fixtures\Contracts\Attribute as Base;
@@ -11,11 +12,6 @@ class Attribute implements Base
     private $name;
 
     /**
-     * @var mixed
-     */
-    private $value;
-
-    /**
      * The registered string macros.
      *
      * @var array
@@ -24,12 +20,10 @@ class Attribute implements Base
 
     /**
      * @param string $name
-     * @param mixed  $value
      */
-    public function __construct($name, $value)
+    public function __construct($name)
     {
-        $this->name  = $name;
-        $this->value = $value;
+        $this->name = $name;
     }
 
     /**
@@ -41,18 +35,21 @@ class Attribute implements Base
     }
 
     /**
+     * @param mixed $value
+     *
      * @return mixed
      */
-    public function getValue()
+    public function parseValue($value)
     {
-        return $this->value;
+        return $value;
     }
 
     /**
      * Register a custom macro.
      *
-     * @param  string    $name
-     * @param  callable  $macro
+     * @param string   $name
+     * @param callable $macro
+     *
      * @return void
      */
     public static function macro($name, callable $macro)
@@ -63,12 +60,12 @@ class Attribute implements Base
     /**
      * Checks if macro is registered.
      *
-     * @param  string  $name
+     * @param string $name
+     *
      * @return bool
      */
     public static function hasMacro($name)
     {
         return isset(static::$macros[$name]);
     }
-
 }
