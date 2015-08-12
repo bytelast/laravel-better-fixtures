@@ -55,7 +55,7 @@ class Fixtures
         foreach ($paths as $path) {
             foreach (glob("$path/*.yml") as $file) {
                 $table = static::parseTableName($file);
-                $rows  = static::readTableRows($file);
+                $rows = static::readTableRows($file);
                 if (isset($fixtures[$table])) {
                     $fixtures[$table] = array_merge($fixtures[$table], $rows);
                 } else {
