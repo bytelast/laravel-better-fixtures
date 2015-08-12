@@ -25,7 +25,6 @@ class EloquentTest extends TestCase
         $capsule->bootEloquent();
     }
 
-
     public function testParsing()
     {
         $fixture_sets = [
