@@ -16,28 +16,55 @@ class Fixtures
      */
     const MAX_ID = 1073741823; // 2 ** 30 - 1
 
-    public function __construct($path, callable $schema_loader)
+    /**
+     * @param string|array $paths
+     * @param callable     $schema_loader
+     */
+    public function __construct($paths, callable $schema_loader)
     {
-        foreach (glob("$path/*.yml") as $file) {
-            $table = static::parseTableName($file);
-            $rows = static::readTableRows($file);
+        is_array($paths) || $paths = [$paths];
+        $fixtures = $this->import($paths);
+        foreach ($fixtures as $table => $rows) {
             $this->fixtures[$table] = new Fixture($table, $rows, call_user_func($schema_loader, $table));
         }
     }
 
     public function toArray()
     {
-        return $this->export('toArray');
-    }
+        $fixtures = [];
+        foreach ($this->fixtures as $table => $fixture) {
+            $fixtures[$table] = $fixture->toArray();
+        }
 
-    public function toYaml()
-    {
-        return $this->export('toYaml');
+        return $fixtures;
     }
 
     public static function identify($label)
     {
         return sprintf('%u', crc32($label)) % self::MAX_ID;
+    }
+
+    /**
+     * @param array $paths
+     *
+     * @return array
+     */
+    protected function import(array $paths)
+    {
+        $fixtures = [];
+        foreach ($paths as $path) {
+            foreach (glob("$path/*.yml") as $file) {
+                $table = static::parseTableName($file);
+                $rows  = static::readTableRows($file);
+                if (isset($fixtures[$table])) {
+                    $fixtures[$table] = array_merge($fixtures[$table], $rows);
+                } else {
+                    $fixtures[$table] = $rows;
+                }
+            }
+        }
+
+        return $fixtures;
     }
 
     /**
@@ -58,16 +85,5 @@ class Fixtures
     protected static function readTableRows($file)
     {
         return Yaml::parse(file_get_contents($file));
-    }
-
-    private function export($method)
-    {
-        $fixtures = [];
-
-        foreach ($this->fixtures as $table => $fixture) {
-            $fixtures[$table] = $fixture->$method();
-        }
-
-        return $fixtures;
     }
 }

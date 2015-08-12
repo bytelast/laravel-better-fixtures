@@ -9,8 +9,10 @@ use Yaodong\Fixtures\Frameworks\Eloquent\Schema;
 
 class EloquentTest extends TestCase
 {
-    public function testParsing()
+    protected function setUp()
     {
+        parent::setUp();
+
         $db_file = __DIR__.'/testing.sqlite';
         touch($db_file);
 
@@ -21,12 +23,23 @@ class EloquentTest extends TestCase
             'prefix'   => '',
         ]);
         $capsule->bootEloquent();
+    }
 
-        $fixtures = new Fixtures(__DIR__.'/Eloquent/fixtures', function ($table) {
+
+    public function testParsing()
+    {
+        $fixture_sets = [
+            __DIR__.'/Eloquent/fixtures/base',
+            __DIR__.'/Eloquent/fixtures',
+        ];
+
+        $schema_loader = function ($table) {
             $class = __NAMESPACE__.'\Eloquent\\'.studly_case(str_singular($table));
 
             return new Schema(new $class());
-        });
+        };
+
+        $fixtures = new Fixtures($fixture_sets, $schema_loader);
 
         $data = $fixtures->toArray();
 
@@ -34,5 +47,7 @@ class EloquentTest extends TestCase
         self::assertArrayHasKey('posts', $data);
         self::assertArrayHasKey('users', $data);
         self::assertEquals($data['posts']['holiday']['user_id'], $data['users']['jane']['id']);
+
+        self::assertArrayHasKey('admin', $data['users']);
     }
 }
