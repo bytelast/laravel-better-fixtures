@@ -27,7 +27,7 @@ class Fixture
     public function __construct(Fixtures $fixtures, $table, array $rows)
     {
         $this->fixtures = $fixtures;
-        $this->table    = $table;
+        $this->table = $table;
 
         foreach ($rows as $label => $row) {
             $this->rows[$label] = $this->parse($label, $row);
