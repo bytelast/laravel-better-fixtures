@@ -2,7 +2,9 @@
 
 namespace Yaodong\Fixtures;
 
+use Exception;
 use Symfony\Component\Yaml\Yaml;
+use Yaodong\Fixtures\Contracts\Schema;
 
 class Fixtures
 {
@@ -12,20 +14,24 @@ class Fixtures
     private $fixtures = [];
 
     /**
+     * @var callable
+     */
+    protected static $schema_loader;
+
+    /**
      * Integer identifiers are values less than 2^30.
      */
     const MAX_ID = 1073741823; // 2 ** 30 - 1
 
     /**
      * @param string|array $paths
-     * @param callable     $schema_loader
      */
-    public function __construct($paths, callable $schema_loader)
+    public function __construct($paths)
     {
         is_array($paths) || $paths = [$paths];
         $fixtures = $this->import($paths);
         foreach ($fixtures as $table => $rows) {
-            $this->fixtures[$table] = new Fixture($table, $rows, call_user_func($schema_loader, $table));
+            $this->fixtures[$table] = new Fixture($this, $table, $rows);
         }
     }
 
@@ -42,6 +48,29 @@ class Fixtures
     public static function identify($label)
     {
         return sprintf('%u', crc32($label)) % self::MAX_ID;
+    }
+
+    /**
+     * @param string $table
+     *
+     * @return Schema
+     * @throws Exception
+     */
+    public function getSchema($table)
+    {
+        if (empty(static::$schema_loader)) {
+            throw new \Exception('Schema loader is not set.');
+        }
+
+        return call_user_func(static::$schema_loader, $table);
+    }
+
+    /**
+     * @param callable $loader
+     */
+    public static function setSchemaLoader(callable $loader)
+    {
+        static::$schema_loader = $loader;
     }
 
     /**
