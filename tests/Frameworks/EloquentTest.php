@@ -28,18 +28,18 @@ class EloquentTest extends TestCase
 
     public function testParsing()
     {
-        $fixture_sets = [
+        $folders = [
             __DIR__.'/Eloquent/fixtures/base',
             __DIR__.'/Eloquent/fixtures',
         ];
 
-        $schema_loader = function ($table) {
+        Fixtures::setSchemaLoader(function ($table) {
             $class = __NAMESPACE__.'\Eloquent\\'.studly_case(str_singular($table));
 
             return new Schema(new $class());
-        };
+        });
 
-        $fixtures = new Fixtures($fixture_sets, $schema_loader);
+        $fixtures = new Fixtures($folders);
 
         $data = $fixtures->toArray();
 
