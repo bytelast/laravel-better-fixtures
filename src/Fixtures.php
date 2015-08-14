@@ -2,14 +2,26 @@
 
 namespace Yaodong\Fixtures;
 
+use Exception;
 use Symfony\Component\Yaml\Yaml;
+use Yaodong\Fixtures\Contracts\Schema;
 
 class Fixtures
 {
     /**
      * @var Fixture[]
      */
-    private $fixtures = [];
+    private $fixture = [];
+
+    /**
+     * @var callable
+     */
+    protected static $schema_loader;
+
+    /**
+     * @var callable
+     */
+    protected static $identifier;
 
     /**
      * Integer identifiers are values less than 2^30.
@@ -18,30 +30,73 @@ class Fixtures
 
     /**
      * @param string|array $paths
-     * @param callable     $schema_loader
      */
-    public function __construct($paths, callable $schema_loader)
+    public function __construct($paths)
     {
         is_array($paths) || $paths = [$paths];
         $fixtures = $this->import($paths);
         foreach ($fixtures as $table => $rows) {
-            $this->fixtures[$table] = new Fixture($table, $rows, call_user_func($schema_loader, $table));
+            $this->fixture[$table] = $this->instanceFixture($table, $rows);
         }
     }
 
+    /**
+     * @param string $label
+     *
+     * @return int
+     */
+    public static function identify($label)
+    {
+        if (!static::$identifier) {
+            return sprintf('%u', crc32($label)) % self::MAX_ID;
+        } else {
+            return call_user_func(static::$identifier, $label);
+        }
+    }
+
+    /**
+     * @param callable $identifier
+     */
+    public static function setIdentifier(callable $identifier)
+    {
+        static::$identifier = $identifier;
+    }
+
+    /**
+     * @param string $table
+     *
+     * @throws Exception
+     *
+     * @return Schema
+     */
+    public function getSchema($table)
+    {
+        if (empty(static::$schema_loader)) {
+            throw new \Exception('Schema loader is not set.');
+        }
+
+        return call_user_func(static::$schema_loader, $table);
+    }
+
+    /**
+     * @param callable $loader
+     */
+    public static function setSchemaLoader(callable $loader)
+    {
+        static::$schema_loader = $loader;
+    }
+
+    /**
+     * @return array
+     */
     public function toArray()
     {
         $fixtures = [];
-        foreach ($this->fixtures as $table => $fixture) {
+        foreach ($this->fixture as $table => $fixture) {
             $fixtures[$table] = $fixture->toArray();
         }
 
         return $fixtures;
-    }
-
-    public static function identify($label)
-    {
-        return sprintf('%u', crc32($label)) % self::MAX_ID;
     }
 
     /**
@@ -85,5 +140,16 @@ class Fixtures
     protected static function readTableRows($file)
     {
         return Yaml::parse(file_get_contents($file));
+    }
+
+    /**
+     * @param string $table
+     * @param array  $rows
+     *
+     * @return Fixture
+     */
+    protected function instanceFixture($table, $rows)
+    {
+        return new Fixture($this, $table, $rows);
     }
 }

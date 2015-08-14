@@ -12,13 +12,6 @@ class Attribute implements Base
     private $name;
 
     /**
-     * The registered string macros.
-     *
-     * @var array
-     */
-    protected static $macros = [];
-
-    /**
      * @param string $name
      */
     public function __construct($name)
@@ -42,30 +35,5 @@ class Attribute implements Base
     public function parseValue($value)
     {
         return $value;
-    }
-
-    /**
-     * Register a custom macro.
-     *
-     * @param string   $name
-     * @param callable $macro
-     *
-     * @return void
-     */
-    public static function macro($name, callable $macro)
-    {
-        static::$macros[$name] = $macro;
-    }
-
-    /**
-     * Checks if macro is registered.
-     *
-     * @param string $name
-     *
-     * @return bool
-     */
-    public static function hasMacro($name)
-    {
-        return isset(static::$macros[$name]);
     }
 }
