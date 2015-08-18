@@ -11,7 +11,7 @@ class Fixtures
     /**
      * @var Fixture[]
      */
-    private $fixture = [];
+    protected $fixture = [];
 
     /**
      * @var callable
