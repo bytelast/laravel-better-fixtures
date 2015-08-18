@@ -9,14 +9,21 @@ class Attribute implements Base
     /**
      * @var string
      */
-    private $name;
+    protected $name;
+
+    /**
+     * @var bool
+     */
+    protected $is_relation;
 
     /**
      * @param string $name
+     * @param bool   $is_relation
      */
-    public function __construct($name)
+    public function __construct($name, $is_relation = false)
     {
-        $this->name = $name;
+        $this->name        = $name;
+        $this->is_relation = $is_relation;
     }
 
     /**
@@ -34,6 +41,10 @@ class Attribute implements Base
      */
     public function parseValue($value)
     {
-        return $value;
+        if ($this->is_relation) {
+            return Fixtures::identify($value);
+        } else {
+            return $value;
+        }
     }
 }

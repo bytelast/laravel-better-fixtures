@@ -14,17 +14,17 @@ class Schema implements Base
     /**
      * @var Model
      */
-    private $model;
+    protected $model;
 
     /**
      * @var ReflectionClass
      */
-    private $reflection;
+    protected $reflection;
 
     /**
      * @var array
      */
-    private $columns;
+    protected $columns;
 
     /**
      * @param Model $model
@@ -59,7 +59,7 @@ class Schema implements Base
         return $this->columns[$name];
     }
 
-    private function parseAttribute($name)
+    protected function parseAttribute($name)
     {
         $method_name = camel_case($name);
         if ($this->reflection->hasMethod($method_name)) {
@@ -75,12 +75,12 @@ class Schema implements Base
         return new Attribute($name);
     }
 
-    private function parseAssociation(Relation $relation, $name)
+    protected function parseAssociation(Relation $relation, $name)
     {
         if ($relation instanceof BelongsTo) {
             $name = $relation->getForeignKey();
         }
 
-        return new Association($name);
+        return new Attribute($name, true);
     }
 }

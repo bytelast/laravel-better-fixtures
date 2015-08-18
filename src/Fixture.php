@@ -7,17 +7,17 @@ class Fixture
     /**
      * @var Fixtures
      */
-    private $fixtures;
+    protected $fixtures;
 
     /**
      * @var string
      */
-    private $table;
+    protected $table;
 
     /**
      * @var array
      */
-    private $rows;
+    protected $rows;
 
     /**
      * @param Fixtures $fixtures
