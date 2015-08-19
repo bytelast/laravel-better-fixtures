@@ -8,6 +8,6 @@ class User extends Model
 {
     public function posts()
     {
-        return $this->hasMany('Yaodong\Fixtures\Test\Frameworks\Eloquent\Models\Post');
+        return $this->hasMany(__NAMESPACE__ . '\Post');
     }
 }

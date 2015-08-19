@@ -7,7 +7,7 @@ interface Schema
     /**
      * @return string
      */
-    public function getTableName();
+    public function getTable();
 
     /**
      * @return bool
@@ -17,7 +17,7 @@ interface Schema
     /**
      * @return string
      */
-    public function getPrimaryKeyName();
+    public function getKeyName();
 
     /**
      * @param string $key

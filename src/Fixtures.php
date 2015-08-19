@@ -35,16 +35,16 @@ abstract class Fixtures
     }
 
     /**
-     * @param string $table_name
+     * @param string $table
      *
      * @return Schema
      */
-    abstract function getSchema($table_name);
+    abstract public function getSchema($table);
 
     /**
      * @return Filter[] $filters
      */
-    abstract function getFilters();
+    abstract protected function getFilters();
 
     /**
      * @return array
@@ -64,6 +64,9 @@ abstract class Fixtures
         }
     }
 
+    /**
+     * Apply all filters which must implements Filter.
+     */
     protected function applyFilters()
     {
         foreach ($this->getFilters() as $filter) {

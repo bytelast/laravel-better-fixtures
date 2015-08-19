@@ -8,6 +8,6 @@ class Post extends Model
 {
     public function user()
     {
-        return $this->belongsTo('Yaodong\Fixtures\Test\Frameworks\Eloquent\Models\User');
+        return $this->belongsTo(__NAMESPACE__ . '\User');
     }
 }

@@ -15,9 +15,9 @@ class Relations implements Filter
                 foreach ($row as $key => $value) {
                     $relation = $schema->getRelation($key);
                     if ($relation !== false) {
-                        $row[$key] = $relation->getForeignId($data, $value);
-                        static::arrayReplaceKey($row, $key, $relation->getForeignKey());
-                        $data[$table][$label] = $row;
+                        $target       = &$data[$table][$label];
+                        $target[$key] = $relation->getForeignId($data, $value);
+                        static::arrayReplaceKey($target, $key, $relation->getForeignKey());
                     }
                 }
             }

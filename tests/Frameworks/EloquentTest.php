@@ -34,8 +34,6 @@ class EloquentTest extends TestCase
         $fixtures = new Fixtures($folders);
         $data     = $fixtures->toArray();
 
-        dd($data);
-
         self::assertTrue(is_array($data));
         self::assertArrayHasKey('posts', $data);
         self::assertArrayHasKey('users', $data);

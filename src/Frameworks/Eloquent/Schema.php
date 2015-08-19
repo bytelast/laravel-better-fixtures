@@ -37,7 +37,7 @@ class Schema implements Base
     /**
      * @return string
      */
-    public function getTableName()
+    public function getTable()
     {
         return $this->model->getTable();
     }
@@ -47,7 +47,7 @@ class Schema implements Base
         return $this->model->getIncrementing();
     }
 
-    public function getPrimaryKeyName()
+    public function getKeyName()
     {
         return $this->model->getKeyName();
     }

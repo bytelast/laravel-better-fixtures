@@ -24,14 +24,15 @@ class Identifier implements FilterInterface
 
     public function apply(array &$data, Fixtures $fixtures)
     {
-        foreach ($data as $table_name => $rows) {
-            $schema = $fixtures->getSchema($table_name);
-            $pk     = $schema->getPrimaryKeyName();
-            foreach ($rows as $label => $row) {
-                $id = $this->incrementing ? static::incrementing($table_name) : static::checksum($label);
-                $data[$table_name][$label] = array_merge([$pk => $id], $data[$table_name][$label]);
-            }
-        }
+        array_walk($data, function (array &$rows, $table) use ($fixtures) {
+            $schema = $fixtures->getSchema($table);
+            $pk     = $schema->getKeyName();
+
+            array_walk($rows, function (array &$row, $label) use ($table, $pk) {
+                $id  = $this->incrementing ? static::incrementing($table) : static::checksum($label);
+                $row = array_merge([$pk => $id], $row);
+            });
+        });
     }
 
     protected static function checksum($label)
@@ -39,16 +40,16 @@ class Identifier implements FilterInterface
         return sprintf('%u', crc32($label)) % self::MAX_ID;
     }
 
-    protected static function incrementing($table_name)
+    protected static function incrementing($table)
     {
         static $counters = [];
 
-        if (!isset($counters[$table_name])) {
-            $counters[$table_name] = 1;
+        if (!isset($counters[$table])) {
+            $counters[$table] = 1;
         } else {
-            $counters[$table_name] ++;
+            $counters[$table] ++;
         }
 
-        return $counters[$table_name];
+        return $counters[$table];
     }
 }

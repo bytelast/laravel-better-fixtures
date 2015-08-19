@@ -11,13 +11,13 @@ use Yaodong\Fixtures\Frameworks\Eloquent\Schema;
 class Fixtures extends FixturesAbstract
 {
     /**
-     * @param string $table_name
+     * @param string $table
      *
      * @return Schema
      */
-    public function getSchema($table_name)
+    public function getSchema($table)
     {
-        $class = __NAMESPACE__.'\\Models\\'.studly_case(str_singular($table_name));
+        $class = __NAMESPACE__.'\\Models\\'.studly_case(str_singular($table));
 
         return new Schema(new $class());
     }
@@ -25,7 +25,7 @@ class Fixtures extends FixturesAbstract
     /**
      * @return Filter[] $filters
      */
-    public function getFilters()
+    protected function getFilters()
     {
         return [
             new Identifier(),
