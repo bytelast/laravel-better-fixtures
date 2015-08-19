@@ -2,124 +2,73 @@
 
 namespace Yaodong\Fixtures;
 
-use Exception;
 use Symfony\Component\Yaml\Yaml;
+use Yaodong\Fixtures\Contracts\Filter;
 use Yaodong\Fixtures\Contracts\Schema;
 
-class Fixtures
+abstract class Fixtures
 {
     /**
-     * @var Fixture[]
+     * @var array
      */
-    protected $fixture = [];
+    protected $paths;
 
     /**
-     * @var callable
+     * @var array
      */
-    protected static $schema_loader;
-
-    /**
-     * @var callable
-     */
-    protected static $identifier;
-
-    /**
-     * Integer identifiers are values less than 2^30.
-     */
-    const MAX_ID = 1073741823; // 2 ** 30 - 1
+    protected $data = [];
 
     /**
      * @param string|array $paths
      */
     public function __construct($paths)
     {
-        is_array($paths) || $paths = [$paths];
-        $fixtures = $this->import($paths);
-        foreach ($fixtures as $table => $rows) {
-            $this->fixture[$table] = $this->instanceFixture($table, $rows);
-        }
+        $this->paths = is_array($paths) ? $paths : [$paths];
+
+        $this->importData();
+        $this->applyFilters();
     }
 
-    /**
-     * @param string $label
-     *
-     * @return int
-     */
-    public static function identify($label)
+    public function toArray()
     {
-        if (!static::$identifier) {
-            return sprintf('%u', crc32($label)) % self::MAX_ID;
-        } else {
-            return call_user_func(static::$identifier, $label);
-        }
+        return $this->data;
     }
 
     /**
-     * @param callable $identifier
-     */
-    public static function setIdentifier(callable $identifier)
-    {
-        static::$identifier = $identifier;
-    }
-
-    /**
-     * @param string $table
-     *
-     * @throws Exception
+     * @param string $table_name
      *
      * @return Schema
      */
-    public function getSchema($table)
-    {
-        if (empty(static::$schema_loader)) {
-            throw new \Exception('Schema loader is not set.');
-        }
-
-        return call_user_func(static::$schema_loader, $table);
-    }
+    abstract function getSchema($table_name);
 
     /**
-     * @param callable $loader
+     * @return Filter[] $filters
      */
-    public static function setSchemaLoader(callable $loader)
-    {
-        static::$schema_loader = $loader;
-    }
+    abstract function getFilters();
 
     /**
      * @return array
      */
-    public function toArray()
+    protected function importData()
     {
-        $fixtures = [];
-        foreach ($this->fixture as $table => $fixture) {
-            $fixtures[$table] = $fixture->toArray();
-        }
-
-        return $fixtures;
-    }
-
-    /**
-     * @param array $paths
-     *
-     * @return array
-     */
-    protected function import(array $paths)
-    {
-        $fixtures = [];
-        foreach ($paths as $path) {
+        foreach ($this->paths as $path) {
             foreach (glob("$path/*.yml") as $file) {
                 $table = static::parseTableName($file);
-                $rows = static::readTableRows($file);
-                if (isset($fixtures[$table])) {
-                    $fixtures[$table] = array_merge($fixtures[$table], $rows);
+                $rows  = static::readTableRows($file);
+                if (isset($this->data[$table])) {
+                    $this->data[$table] = array_merge($this->data[$table], $rows);
                 } else {
-                    $fixtures[$table] = $rows;
+                    $this->data[$table] = $rows;
                 }
             }
         }
+    }
 
-        return $fixtures;
+    protected function applyFilters()
+    {
+        foreach ($this->getFilters() as $filter) {
+            $filter->apply($this->data, $this);
+        }
     }
 
     /**
@@ -140,16 +89,5 @@ class Fixtures
     protected static function readTableRows($file)
     {
         return Yaml::parse(file_get_contents($file));
-    }
-
-    /**
-     * @param string $table
-     * @param array  $rows
-     *
-     * @return Fixture
-     */
-    protected function instanceFixture($table, $rows)
-    {
-        return new Fixture($this, $table, $rows);
     }
 }

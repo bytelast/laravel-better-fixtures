@@ -5,6 +5,11 @@ namespace Yaodong\Fixtures\Contracts;
 interface Schema
 {
     /**
+     * @return string
+     */
+    public function getTableName();
+
+    /**
      * @return bool
      */
     public function getIncrementing();
@@ -17,7 +22,7 @@ interface Schema
     /**
      * @param string $key
      *
-     * @return Attribute
+     * @return Relation|false
      */
-    public function getAttribute($key);
+    public function getRelation($key);
 }
