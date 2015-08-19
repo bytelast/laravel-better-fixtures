@@ -3,11 +3,10 @@
 namespace Yaodong\Fixtures\Frameworks\Eloquent;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Eloquent\Relations\Relation as EloquentRelation;
 use ReflectionClass;
-use Yaodong\Fixtures\Attribute;
 use Yaodong\Fixtures\Contracts\Schema as Base;
+use Yaodong\Fixtures\Frameworks\Eloquent\Relation;
 
 class Schema implements Base
 {
@@ -24,15 +23,23 @@ class Schema implements Base
     /**
      * @var array
      */
-    protected $columns;
+    protected $relations;
 
     /**
      * @param Model $model
      */
     public function __construct(Model $model)
     {
-        $this->model = $model;
+        $this->model      = $model;
         $this->reflection = new ReflectionClass(get_class($model));
+    }
+
+    /**
+     * @return string
+     */
+    public function getTable()
+    {
+        return $this->model->getTable();
     }
 
     public function getIncrementing()
@@ -40,47 +47,34 @@ class Schema implements Base
         return $this->model->getIncrementing();
     }
 
-    public function getPrimaryKeyName()
+    public function getKeyName()
     {
         return $this->model->getKeyName();
     }
 
     /**
-     * @param string $name
+     * @param string $key
      *
-     * @return Attribute
+     * @return Relation
      */
-    public function getAttribute($name)
+    public function getRelation($key)
     {
-        if (!isset($this->columns[$name])) {
-            $this->columns[$name] = $this->parseAttribute($name);
-        }
+        if (!isset($this->relations[$key])) {
 
-        return $this->columns[$name];
-    }
+            $this->relations[$key] = false;
 
-    protected function parseAttribute($name)
-    {
-        $method_name = camel_case($name);
-        if ($this->reflection->hasMethod($method_name)) {
-            $method = $this->reflection->getMethod($method_name);
-            if ($method->isPublic() && $method->getNumberOfParameters() === 0) {
-                $return = call_user_func([$this->model, $method_name]);
-                if ($return instanceof Relation) {
-                    return $this->parseAssociation($return, $name);
+            $method_name = camel_case($key);
+            if ($this->reflection->hasMethod($method_name)) {
+                $method = $this->reflection->getMethod($method_name);
+                if ($method->isPublic() && $method->getNumberOfParameters() === 0) {
+                    $return = call_user_func([$this->model, $method_name]);
+                    if ($return instanceof EloquentRelation) {
+                        $this->relations[$key] = new Relation($return);
+                    }
                 }
             }
         }
 
-        return new Attribute($name);
-    }
-
-    protected function parseAssociation(Relation $relation, $name)
-    {
-        if ($relation instanceof BelongsTo) {
-            $name = $relation->getForeignKey();
-        }
-
-        return new Attribute($name, true);
+        return $this->relations[$key];
     }
 }
