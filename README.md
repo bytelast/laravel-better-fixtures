@@ -2,7 +2,6 @@ PHP Fixtures
 ================
 
 [![Build Status](https://travis-ci.org/yaodng/php-fixtures.svg)](https://travis-ci.org/yaodng/php-fixtures)
-[![StyleCI](https://styleci.io/repos/38796384/shield)](https://styleci.io/repos/38796384)
 
 This package is inspired by [Rails](http://guides.rubyonrails.org/testing.html).
 
