@@ -4,8 +4,7 @@ namespace Yaodong\Fixtures\Test\Frameworks;
 
 use Illuminate\Database\Capsule\Manager as Capsule;
 use PHPUnit_Framework_TestCase as TestCase;
-use Yaodong\Fixtures\Fixtures;
-use Yaodong\Fixtures\Frameworks\Eloquent\Schema;
+use Yaodong\Fixtures\Test\Frameworks\Eloquent\Fixtures;
 
 class EloquentTest extends TestCase
 {
@@ -32,15 +31,8 @@ class EloquentTest extends TestCase
             __DIR__.'/Eloquent/fixtures',
         ];
 
-        Fixtures::setSchemaLoader(function ($table) {
-            $class = __NAMESPACE__.'\Eloquent\\'.studly_case(str_singular($table));
-
-            return new Schema(new $class());
-        });
-
         $fixtures = new Fixtures($folders);
-
-        $data = $fixtures->toArray();
+        $data     = $fixtures->toArray();
 
         self::assertTrue(is_array($data));
         self::assertArrayHasKey('posts', $data);
