@@ -10,16 +10,16 @@ class Identifier implements FilterInterface
     /**
      * @var bool
      */
-    protected $incrementing = false;
+    protected $sequential = false;
 
     /**
      * Integer identifiers are values less than 2^30.
      */
     const MAX_ID = 1073741823;
 
-    public function __construct($incrementing = false)
+    public function __construct($sequential = false)
     {
-        $this->incrementing = $incrementing;
+        $this->sequential = $sequential;
     }
 
     public function apply(array &$data, Fixtures $fixtures)
@@ -28,10 +28,13 @@ class Identifier implements FilterInterface
             $schema = $fixtures->getSchema($table);
             $pk     = $schema->getKeyName();
 
-            array_walk($rows, function (array &$row, $label) use ($table, $pk) {
-                $id  = $this->incrementing ? static::incrementing($table) : static::checksum($label);
-                $row = array_merge([$pk => $id], $row);
-            });
+            # only table with incrementing
+            if ($schema->getIncrementing()) {
+                array_walk($rows, function (array &$row, $label) use ($table, $pk) {
+                    $id  = $this->sequential ? static::sequential($table) : static::checksum($label);
+                    $row = array_merge([$pk => $id], $row);
+                });
+            }
         });
     }
 
@@ -40,7 +43,7 @@ class Identifier implements FilterInterface
         return sprintf('%u', crc32($label)) % self::MAX_ID;
     }
 
-    protected static function incrementing($table)
+    protected static function sequential($table)
     {
         static $counters = [];
 
