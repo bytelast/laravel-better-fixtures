@@ -9,84 +9,123 @@ use Yaodong\Fixtures\Fixtures;
 class Identifier
 {
     /**
-     * Integer identifiers are values less than 2^30.
-     */
-    const MAX_ID = 1073741823;
-
-    /**
      * @var Fixtures
      */
     private $fixtures;
 
     /**
-     * @param Fixtures $fixtures
+     * @var array
      */
-    public function __construct(Fixtures $fixtures)
+    private $data;
+
+    /**
+     * @var array
+     */
+    private $counters = [];
+
+    /**
+     * @param Fixtures $fixtures
+     * @param array    $data
+     */
+    public function __construct(Fixtures $fixtures, array $data)
     {
         $this->fixtures = $fixtures;
+        $this->data     = $data;
+
+        $this->identifyIncrementingFields();
+        $this->identifyRelationFields();
     }
 
-    public function apply(array &$data)
+    public function getData()
     {
-        $this->fillIncrementing($data);
+        return $this->data;
+    }
 
-        foreach ($data as $table => $rows) {
-            $schema = $this->fixtures->getSchema($table);
-            foreach ($rows as $label => $row) {
-                foreach ($row as $key => $value) {
-                    $relation = $schema->getRelation($key);
-                    if ($relation instanceof Relation) {
-                        $data[$table][$label][$key] = $this->identify($data, $relation, $value);
-                        self::arrayReplaceKey($data[$table][$label], $key, $relation->getForeignKey());
-                    }
+    private function identifyIncrementingFields()
+    {
+        // each table
+        foreach ($this->data as $table => $rows) {
+            $schema   = $this->fixtures->getSchema($table);
+
+            // each row if incrementing
+            if ($schema->getIncrementing()) {
+                $key_name = $schema->getKeyName();
+
+                foreach ($rows as $label => $row) {
+                    $this->data[$table][$label][$key_name] = $this->count($table);
                 }
-
             }
         }
     }
 
-    private function identify(&$data, Relation $relation, $label)
+    private function identifyRelationFields()
+    {
+        // each table
+        foreach ($this->data as $table => $rows) {
+            $schema = $this->fixtures->getSchema($table);
+
+            // each row
+            foreach ($rows as $label => $row) {
+
+                // each pair of key-value
+                foreach ($row as $key => $value) {
+
+                    if ($value === null || substr($value, 0, 1) !== '$') {
+                        continue;
+                    }
+
+                    $relation = $schema->getRelation($key);
+                    if (!$relation instanceof Relation) {
+                        continue;
+                    }
+
+                    // remove prefix `$`
+                    $other_label = substr($value, 1);
+
+                    unset($this->data[$table][$label][$key]);
+
+                    $foreign_key = $relation->getForeignKey();
+                    $this->data[$table][$label][$foreign_key] = $this->fetchForeignId($relation, $other_label);
+                }
+            }
+        }
+    }
+
+    private function fetchForeignId(Relation $relation, $label)
     {
         $other_table  = $relation->getOtherTable();
         $other_key    = $relation->getOtherKey();
         $other_schema = $this->fixtures->getSchema($other_table);
-        $other_value  = array_get($data[$other_table][$label], $other_key, false);
+        $other_value  = array_get($this->data[$other_table][$label], $other_key, false);
 
         if ($other_value !== false) {
             return $other_value;
-        } elseif (substr($other_key, -3) === '_id') {
-            $other_relation = $other_schema->getRelation(substr($other_key, 0, -3));
+        }
+
+        if (substr($other_key, -3) === '_id') {
+            $relation_key   = substr($other_key, 0, -3);
+            $other_relation = $other_schema->getRelation($relation_key);
+
             if ($other_relation instanceof Relation) {
-                return $this->identify($data, $other_relation, $other_value);
+                $other_value = array_get($this->data[$other_table][$label], $relation_key, false);
+                return $this->fetchForeignId($other_relation, $other_value);
             }
         }
 
         throw new Exception('Can\'t identify ' . $other_table . '.' . $other_key . ' with value ' . $other_value);
     }
 
-    private function fillIncrementing(array &$data)
+    /**
+     * @param string $table
+     *
+     * @return int
+     */
+    private function count($table)
     {
-        foreach ($data as $table => $rows) {
-            $schema = $this->fixtures->getSchema($table);
-
-            foreach ($rows as $label => $row) {
-                if ($schema->getIncrementing()) {
-                    $data[$table][$label] = array_merge([$schema->getKeyName() =>sprintf('%u', crc32($label)) % self::MAX_ID], $row);
-                }
-            }
+        if (!array_key_exists($table, $this->counters)) {
+            $this->counters[$table] = 0;
         }
-    }
 
-
-
-    private static function arrayReplaceKey(&$array, $key_from, $key_to)
-    {
-        $keys  = array_keys($array);
-        $index = array_search($key_from, $keys);
-
-        if ($index !== false) {
-            $keys[$index] = $key_to;
-            $array = array_combine($keys, $array);
-        }
+        return ++$this->counters[$table];
     }
 }
