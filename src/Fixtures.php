@@ -70,7 +70,8 @@ abstract class Fixtures
      */
     protected function identify()
     {
-        Identifier::apply($this->data, $this);
+        $identifier = new Identifier($this);
+        $identifier->apply($this->data);
     }
 
     /**

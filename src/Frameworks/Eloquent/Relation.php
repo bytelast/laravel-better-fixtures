@@ -27,6 +27,34 @@ class Relation implements RelationInterface
      *
      * @throws Exception
      */
+    public function getOtherTable()
+    {
+        if ($this->relation instanceof BelongsTo) {
+            return $this->relation->getRelated()->getTable();
+        }
+
+        throw new Exception('Relation type ' . get_class($this->relation) . 'is not supported.');
+    }
+
+    /**
+     * @return string
+     *
+     * @throws Exception
+     */
+    public function getOtherKey()
+    {
+        if ($this->relation instanceof BelongsTo) {
+            return $this->relation->getOtherKey();
+        }
+
+        throw new Exception('Relation type ' . get_class($this->relation) . 'is not supported.');
+    }
+
+    /**
+     * @return string
+     *
+     * @throws Exception
+     */
     public function getForeignKey()
     {
         if ($this->relation instanceof BelongsTo) {
