@@ -70,7 +70,7 @@ class Identifier
                 // each pair of key-value
                 foreach ($row as $key => $value) {
 
-                    if ($value === null || substr($value, 0, 1) !== '$') {
+                    if ($value === null) {
                         continue;
                     }
 
@@ -79,13 +79,10 @@ class Identifier
                         continue;
                     }
 
-                    // remove prefix `$`
-                    $other_label = substr($value, 1);
-
                     unset($this->data[$table][$label][$key]);
 
                     $foreign_key = $relation->getForeignKey();
-                    $this->data[$table][$label][$foreign_key] = $this->fetchForeignId($relation, $other_label);
+                    $this->data[$table][$label][$foreign_key] = $this->fetchForeignId($relation, $value);
                 }
             }
         }

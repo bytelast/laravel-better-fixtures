@@ -1,10 +1,10 @@
 holiday:
-  user: $jane
+  user: jane
   title: Lovely Holiday
   content: blabla
 
 travel:
-  user: $eric
+  user: eric
   title: What a long trip
   content: blabla
 
