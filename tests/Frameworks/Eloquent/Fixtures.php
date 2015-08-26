@@ -21,16 +21,4 @@ class Fixtures extends FixturesAbstract
 
         return new Schema(new $class());
     }
-
-    /**
-     * @return Filter[] $filters
-     */
-    protected function getFilters()
-    {
-        return [
-            new Identifier(),
-            new Relations(),
-        ];
-    }
-
 }

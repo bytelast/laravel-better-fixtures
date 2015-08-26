@@ -35,17 +35,5 @@ class Relation implements RelationInterface
 
         throw new Exception('Relation type ' . get_class($this->relation) . 'is not supported.');
     }
-
-    public function getForeignId(array $data, $label)
-    {
-        if ($this->relation instanceof BelongsTo) {
-            list ($table, $key) = explode('.', $this->relation->getQualifiedOtherKeyName());
-            return $data[$table][$label][$key];
-        }
-
-        throw new Exception('Relation type ' . get_class($this->relation) . 'is not supported.');
-    }
-
-
 }
 

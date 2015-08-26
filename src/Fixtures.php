@@ -2,9 +2,10 @@
 
 namespace Yaodong\Fixtures;
 
+use Closure;
 use Symfony\Component\Yaml\Yaml;
-use Yaodong\Fixtures\Contracts\Filter;
 use Yaodong\Fixtures\Contracts\Schema;
+use Yaodong\Fixtures\Helpers\Identifier;
 
 abstract class Fixtures
 {
@@ -25,13 +26,18 @@ abstract class Fixtures
     {
         $this->paths = is_array($paths) ? $paths : [$paths];
 
-        $this->importData();
-        $this->applyFilters();
+        $this->import();
+        $this->identify();
     }
 
     public function toArray()
     {
         return $this->data;
+    }
+
+    public function apply(Closure $function)
+    {
+        $function($this->data, $this);
     }
 
     /**
@@ -42,14 +48,9 @@ abstract class Fixtures
     abstract public function getSchema($table);
 
     /**
-     * @return Filter[] $filters
-     */
-    abstract protected function getFilters();
-
-    /**
      * @return array
      */
-    protected function importData()
+    protected function import()
     {
         foreach ($this->paths as $path) {
             foreach (glob("$path/*.yml") as $file) {
@@ -65,13 +66,11 @@ abstract class Fixtures
     }
 
     /**
-     * Apply all filters which must implements Filter.
+     * Apply identifier.
      */
-    protected function applyFilters()
+    protected function identify()
     {
-        foreach ($this->getFilters() as $filter) {
-            $filter->apply($this->data, $this);
-        }
+        Identifier::apply($this->data, $this);
     }
 
     /**
